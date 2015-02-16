@@ -31,11 +31,18 @@ module Assign1 where
     ls x y = x < y
     eq x y = x == y
 
+    trifectaCorrect = trifecta asBool toChar checkDoubs 1 == 1.0 && trifecta asBool toChar checkDoubs 0 == 0.0
+    mapCFCorrect = mapCF True abc [1..5] == [2.0,4.0,6.0,8.0,10.0] && mapCF False abc [1..5] == [1.0,2.0,3.0,4.0,5.0]
+    allPairFuncCorrect = allPairFunc [gt, ls, eq] [(5,4), (3,4), (2,2)] == True && allPairFunc [gt, ls, eq] [(5,6), (3,4), (2,2)] == False && allPairFunc [ls, ls, eq] [(5,6.0), (3,4.0), (2,2.0)] == True
+    
     main = do 
-        print (trifecta asBool toChar checkDoubs 1)
-        print (trifecta asBool toChar checkDoubs 0)
-        print (mapCF True abc [1..5])
-        print (mapCF False abc [1..5])
-        print (allPairFunc [gt, ls, eq] [(5,4), (3,4), (2,2)])
-        print (allPairFunc [gt, ls, eq] [(5,6), (3,4), (2,2)])
-        print (allPairFunc [ls, ls, eq] [(5,6.0), (3,4.0), (2,2.0)])
+        print trifectaCorrect
+        print mapCFCorrect
+        print allPairFuncCorrect
+        --print (trifecta asBool toChar checkDoubs 1)
+        --print (trifecta asBool toChar checkDoubs 0)
+        --print (mapCF True abc [1..5])
+        --print (mapCF False abc [1..5])
+        --print (allPairFunc [gt, ls, eq] [(5,4), (3,4), (2,2)])
+        --print (allPairFunc [gt, ls, eq] [(5,6), (3,4), (2,2)])
+        --print (allPairFunc [ls, ls, eq] [(5,6.0), (3,4.0), (2,2.0)])
