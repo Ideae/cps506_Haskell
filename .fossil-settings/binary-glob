@@ -1,0 +1,16 @@
+*.pdf
+*.key
+*.numbers
+*.jpg
+*.png
+*.gif
+*.tiff
+*.ico
+*.kth
+*.xls
+*.plist
+*.fossil
+*.zip
+*.tar
+*.gz
+*.tgz
