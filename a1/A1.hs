@@ -1,4 +1,4 @@
-module Assign1 where
+module A1 where
     trifecta :: (a -> b) -> (b -> c) -> (c -> d) -> a -> d 
     trifecta x y z w = z (y (x w))
 
