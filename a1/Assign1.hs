@@ -8,9 +8,34 @@ module Assign1 where
     allPairFunc :: [a -> b -> Bool] -> [(a,b)] -> Bool
     allPairFunc [][] = True
     allPairFunc (x:y) (z:w) | (length y) /= (length w) = False
-                            | otherwise = x ((fst z) (snd z)) && allPairFunc y w
+                            | otherwise = x (fst z) (snd z) && allPairFunc y w
 
 
-    asBool :: Num -> Bool
+    asBool :: Int -> Bool
     asBool i | i == 0 = False
-             | otherwise True
+             | otherwise = True
+
+    toChar :: Bool -> Char
+    toChar b | b == True = 't'
+             | otherwise = 'f'
+
+    checkDoubs :: Char -> Double
+    checkDoubs c | c == 't' = 1.0
+                 | otherwise = 0.0
+
+    abc :: Bool -> Int -> Double
+    abc x y | x == True = fromIntegral(y * 2)
+            | otherwise = fromIntegral(y)
+
+    gt x y = x > y
+    ls x y = x < y
+    eq x y = x == y
+
+    main = do 
+        print (trifecta asBool toChar checkDoubs 1)
+        print (trifecta asBool toChar checkDoubs 0)
+        print (mapCF True abc [1..5])
+        print (mapCF False abc [1..5])
+        print (allPairFunc [gt, ls, eq] [(5,4), (3,4), (2,2)])
+        print (allPairFunc [gt, ls, eq] [(5,6), (3,4), (2,2)])
+        print (allPairFunc [ls, ls, eq] [(5,6.0), (3,4.0), (2,2.0)])
