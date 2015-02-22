@@ -1,12 +1,5 @@
 module A2 where
 
-    --import Data.Typeable
-    --getStaticType :: Typeable a => a -> String
-    --getStaticType = show . typeOf
-    
-    --Create a datatype called Sink (for "everything but the kitchen sink"). 
-    --It should contain constructors for True, False, Integers , Doubles, Strings (which you may have to express as [Char]), and lists of Sink objects. 
-    --The constructors should be: Yes, No, AnInteger, ADouble, List, and AString. (Note, Yes and No have no parameters and encode directly the logical Bool values.)
     data Sink = Yes | No | AnInteger Int | ADouble Double | List [Sink] | AString [Char]
 
     instance Show Sink where
