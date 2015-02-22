@@ -41,24 +41,43 @@ module A2 where
                     | otherwise = True
         asInteger x = truncate x
         asDouble = id
-
+    --{-|
     instance Extract Sink where
-        asBool (AString a) = a == "True"
-        asBool a = a a
+        asBool Yes = True
+        asBool No = False
+        asBool (AnInteger x) = asBool x
+        asBool (ADouble x) = asBool x
+        asBool (List a) = (length a) /= 0
+        asBool (AString a) = a /= ""
 
+        asInteger Yes = 1
+        asInteger No = 0
+        asInteger (AnInteger x) = asInteger x
+        asInteger (ADouble x) = asInteger x
+        asInteger (List a) = asInteger $ (length a) /= 0
+        asInteger (AString a) = asInteger $ a /= ""
+
+        asDouble Yes = 1.0
+        asDouble No = 0.0
+        asDouble (AnInteger x) = asDouble x
+        asDouble (ADouble x) = asDouble x
+        asDouble (List a) = asDouble $ (length a) /= 0
+        asDouble (AString a) = asDouble $ a /= ""
+
+    ---}
 
     main = do
         print (Yes)
         print (asBool Yes)
         print (No)
         print (asBool No)
-        print (AnInteger 3)
-        print (asBool $ AnInteger 3)
-        print (ADouble 4.4)
-        print (asBool $ ADouble 4.4)
-        print (List [Yes, No])
-        print (asBool $ List [Yes, No])
-        print (AString "True")
-        print (asBool AString "True")
+        print (AnInteger 0)
+        print (asBool $ AnInteger 0)
+        print (ADouble 0)
+        print (asBool $ ADouble 0)
+        print (List [])
+        print (asBool $ List [])
+        print (AString "False")
+        print (asBool $ AString "False")
         
         
