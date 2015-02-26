@@ -1,4 +1,7 @@
+
 module A2 where
+    import Test.HUnit
+    
     data Sink t = Yes | No | AnInteger Int | ADouble Double | List [Sink t] | AString [Char] | Other t
 
     instance Show (Sink t) where
@@ -80,6 +83,9 @@ module A2 where
 
     mult a b = a * b
 
+    add a b = a + b
+    newf a b c = a * b - c
+
     instance Num (Sink t) where
         Yes + Yes = Yes
         Yes + No = Yes
@@ -102,7 +108,6 @@ module A2 where
         (ADouble x) * (AnInteger y) = ADouble (x * (fromIntegral y))
         (AnInteger x) *(ADouble y) = ADouble (y * (fromIntegral x))
         (List x) * (List y) = List (mapFunc mult x y)
-        (AString x) * (AString y) = AString (x ++ y)
         _ * _ = error "Error: while multiplying."
 
         negate Yes = No
@@ -135,19 +140,89 @@ module A2 where
     l2 = List [AnInteger 2, AnInteger 4]
 
     main = do
-        
-        print (Yes)
-        print (asBool Yes)
-        print (No)
-        print (asBool No)
-        print (AnInteger 0)
-        print (asBool $ AnInteger 0)
-        print (ADouble 0)
-        print (asBool $ ADouble 0)
-        print (List [])
-        print (asBool $ List [])
-        print (AString "False")
-        print (asBool $ AString "False")
+        assert $ show Yes == "True"
+        assert $ show No == "False"
+        assert $ show (AnInteger 4) == "4"
+        assert $ show (ADouble 4.0) == "4.0"
+        assert $ show (List [Yes, No]) == show [Yes, No]
+        assert $ show (AString "hello") == show "hello"
 
-        print (l1 * l2)
+        assert $ asBool True == True
+        assert $ asInteger False == 0
+        assert $ asDouble True == 1.0
+        
+        assert $ asBool (1 :: Int) == True
+        assert $ asInteger (44 :: Int) == 44
+        assert $ asDouble (2 :: Int) == 2.0
+
+        assert $ asBool (1.0 :: Double) == True
+        assert $ asInteger (22.0 :: Double) == 22
+        assert $ asDouble (4.0 :: Double) == 4
+        
+        assert $ asBool Yes == True
+        assert $ asBool No == False
+        assert $ (asInteger $ AnInteger 0) == 0
+        assert $ (asBool $ AnInteger 1) == True
+        assert $ (asDouble $ AnInteger 0) == 0.0
+        assert $ (asBool $ ADouble 0) == False
+        assert $ (asBool $ List []) == False
+        assert $ (asBool $ AString "True") == True
+
+        assert $ (Yes == Yes) == True
+        assert $ (No == No) == True
+        assert $ (Yes == No) == False
+        assert $ (No == Yes) == False
+        assert $ ((AnInteger 3) == (AnInteger 4)) == False
+        assert $ ((AnInteger 6) == (AnInteger 6)) == True
+        assert $ (l1 == l2) == True
+        assert $ (l1 == List []) == False
+        assert $ ((ADouble 2.2) == (ADouble 3.3)) == False
+        assert $ ((ADouble 2.2) == (ADouble 2.2)) == True
+        assert $ ((AString "x") == (AString "y")) == False
+        assert $ ((AString "z") == (AString "z")) == True
+        assert $ ((ADouble 3.0) == (AnInteger 3)) == True
+        assert $ ((AnInteger 4) == (ADouble 4.4)) == False
+
+        assert $ Yes + Yes == Yes
+        assert $ Yes + No == Yes
+        assert $ No + Yes == Yes
+        assert $ No + No == No
+        assert $ (AnInteger 3) + (AnInteger 4) == AnInteger (7)
+        assert $ (ADouble 2.2) + (ADouble 3.3) == ADouble (5.5)
+        assert $ (ADouble 2.2) + (AnInteger 2) == ADouble (4.2)
+        assert $ (AnInteger 4) + (ADouble 2.2) == ADouble (6.2)
+        assert $ l1 + l2 == List [AnInteger 1, AnInteger 3, AnInteger 2, AnInteger 4]
+        assert $ (AString "hey") + (AString "there") == AString ("heythere")
+
+        assert $ Yes * Yes == Yes
+        assert $ Yes * No == No
+        assert $ No * Yes == No
+        assert $ No * No == No
+        assert $ (AnInteger 3) * (AnInteger 2) == AnInteger (6)
+        assert $ (ADouble 1.0) * (ADouble 1.5) == ADouble (1.5)
+        assert $ (ADouble 1.5) * (AnInteger 2) == ADouble (3.0)
+        assert $ (AnInteger 3) * (ADouble 4.5) == ADouble (13.5)
+        assert $ l1 * l2 == List [AnInteger 2, AnInteger 12]
+
+        assert $ negate Yes == No
+        assert $ negate No == Yes
+        assert $ negate (AnInteger 3) == (AnInteger (-3))
+        assert $ negate (ADouble 1.1) == (ADouble (-1.1))
+        assert $ negate l1 == List [AnInteger (-1), AnInteger (-3)]
+        
+        assert $ abs Yes == Yes
+        assert $ abs No == No
+        assert $ abs (AnInteger (-1)) == (AnInteger 1)
+        assert $ abs (ADouble (-1.1)) == (ADouble 1.1)
+        assert $ (abs (List [Yes, No])) == (List [Yes, No])
+
+        assert $ signum Yes == Yes
+        assert $ signum No == No
+        assert $ signum (AnInteger (-3)) == (AnInteger (-1))
+        assert $ signum (ADouble (-2.2)) == (ADouble (-1.0))
+        assert $ signum l1 == List [AnInteger 1, AnInteger 1]
+        
+        assert $ fromInteger 3 == AnInteger (3)
+
+        print $ "All tests passed successfully."
         
