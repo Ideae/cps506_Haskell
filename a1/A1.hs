@@ -3,7 +3,7 @@ module A1 where
     trifecta x y z w = z (y (x w))
 
     mapCF :: a -> (a -> b -> c) -> [b] -> [c]
-    mapCF x y z = map w z where w = y x
+    mapCF a abc b = map abca b where abca = abc a
 
     allPairFunc :: [a -> b -> Bool] -> [(a,b)] -> Bool
     allPairFunc [][] = True
