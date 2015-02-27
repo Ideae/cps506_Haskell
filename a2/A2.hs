@@ -1,4 +1,7 @@
-
+--Name:   Zachary Harris
+--Course: CPS506, Winter 2015, Assignment #2
+--Due:    2015.02.26 21:36
+--Credit: This is entirely my own work.
 module A2 where
     import Test.HUnit
     
