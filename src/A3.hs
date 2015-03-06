@@ -134,7 +134,7 @@ module A3 where
                                     | p == Rook = x == 0 || y == 0
                                     | p == Bishop = x /= 0 && y /= 0
                                     | p == Queen = True
-                                    | p == Pawn = y == 0 && x == 1 && (c /= Black || a == 1) && (c /= White || a == (-1))
+                                    | p == Pawn = (x == 0 && y == 1 && (c /= Black || b == (-1)) && (c /= White || b == 1))
                                     where x = abs a
                                           y = abs b
 
@@ -171,19 +171,28 @@ module A3 where
                                            ay = cy + dy
 
 
-    --inputLoop = loop ""
-    --            where 
+    inputLoop board = do
+        --putStr $ showBoard board
+        input <- getLine
+        let strings = splitOn " " input
+        let coord = posCoord (strings!!0)
+        let dir = dirOffset (strings!!1)
+        let moves = if (length strings == 3) then (read (strings!!2) :: Int) else 7
+        let newboard = makeMove coord dir moves board
+        putStr $ showBoard newboard
+        inputLoop newboard
     
     --x = read "BKn" :: Piece
     main = do
+        --putStr $ show $ isMoveValid (Piece (White,Pawn)) (0,1)
         --let p1 = (Black, Knight)
         --print (showPiece p1)
         --print (parseChessRow chessRow)
         --print (parseBoard chessBoardString)
         let board = parseBoard chessBoardString
         putStr $ showBoard board
-        --putStr $ "Enter a command: " ;
-        
+        inputLoop board
+        {-|
         input <- getLine ;
         let strings = splitOn " " input
         let coord = posCoord (strings!!0)
@@ -192,14 +201,13 @@ module A3 where
         print $ coord
         print $ dir
         print $ moves
-        print $ getCell coord board
+        --print $ getCell coord board
 
-        --let newboard = replaceInGrid coord (Cell Nothing) board
         let newboard = makeMove coord dir moves board
-        --let newboard = moveSingle coord (3,6) board
         putStr $ showBoard newboard
         --print $ dirOffset input
         --print $ splitOn " " input
         --print $ charIndex 'b'
         --putStr ("a: " ++ input)
+        -}
         
