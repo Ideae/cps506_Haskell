@@ -44,11 +44,13 @@ module A3 where
     readColor 'W' = White
 
     
-    data Piece = Piece (Color, PieceType)
-    instance Show Piece where
+    data Cell = Piece (Color, PieceType) | None
+    instance Show Cell where
+        show None = "   "
         show (Piece (x,y)) = show x ++ show y
-    instance Read Piece where
+    instance Read Cell where
         --readPieceType (x:y) = [(Piece (readColor x, readPieceType y))]
+        readsPrec _ "" = [(None,"")]
         readsPrec _ (h:t) = [(Piece ((if h == 'B' then Black else if h == 'W' then White else error ("Parse error")), readPieceType t), "")] where
             readPieceType a | a == "P" = Pawn   
                             | a == "R" = Rook    
@@ -58,18 +60,22 @@ module A3 where
                             | a == "K" = King    
                             | otherwise = error ("Parse Error" ++ a)
 
+    getCellPiece :: Cell -> PieceType
+    getCellPiece None = error "cell does not contain piece"
+    getCellPiece (Piece (c,p)) = p
+    getCellColor :: Cell -> Color
+    getCellColor None = error "cell does not contain piece"
+    getCellColor (Piece (c,p)) = c
+    isCellEmpty None = True
+    isCellEmpty _ = False
 
-    data Cell = Cell (Maybe Piece)
-    instance Show Cell where
-        show (Cell Nothing) = "   "
-        show (Cell (Just x)) = show x
+    data Board = Board [[Cell]] [Cell] [Cell]
 
-    readCell :: String -> Cell
-    readCell "" = Cell Nothing
-    readCell x = Cell (Just (read x))
+    getBoardGrid (Board grid _ _) = grid
+    getBoardWCaptures (Board _ w _) = w
+    getBoardBCaptures (Board _ _ b) = b
+    addCapture (Board br w b) (Piece (c,p)) = if c == Black then (Board br (w ++ [Piece (c,p)]) b) else (Board br w (b ++ [Piece (c,p)]))
 
-    --type Board = [[Cell]]
-    data Board = Board [[Cell]] [Piece] [Piece]
     type Coord = (Int,Int)
     type Dir = (Int,Int)
 
@@ -86,7 +92,7 @@ module A3 where
 
     parseRow :: [String] -> [Cell]
     parseRow [] = []
-    parseRow (x:y) = readCell x : (parseRow y)
+    parseRow (x:y) = (read x :: Cell) : (parseRow y)
 
     parseBoard :: [[String]] -> Board
     parseBoard [] = (Board [] [] [])
@@ -132,7 +138,7 @@ module A3 where
     getCell :: Coord -> Board -> Cell
     getCell (cx,cy) (Board x _ _) = (x !! cy) !! cx
 
-    isMoveValid :: Piece -> Dir -> Bool
+    isMoveValid :: Cell -> Dir -> Bool
     isMoveValid (Piece (c,p)) (a,b) | p == Knight = (x == 2 && y == 1) || (x == 1 && y == 2)
                                     | x > 1 || y > 1 = False
                                     | p == King = x < 2 && y < 2
@@ -155,27 +161,40 @@ module A3 where
                                                       in (Board (replace cy newrow grid) x y)
 
     moveSingle :: Coord -> Coord -> Board -> Board
-    moveSingle (cx,cy) (c2x,c2y) grid = replaceInGrid (cx,cy) (Cell Nothing) (replaceInGrid (c2x,c2y) (getCell (cx,cy) grid) grid)
+    moveSingle (cx,cy) (c2x,c2y) grid = replaceInGrid (cx,cy) None (replaceInGrid (c2x,c2y) (getCell (cx,cy) grid) grid)
 
     --  cx < 0 || cx >= 8 = error "board movement error"
     makeMove :: Coord -> Dir -> Int -> Board -> Board
     makeMove _ _ 0 board = board
-    makeMove (cx,cy) (dx,dy) n (Board brd w b) | ax < 0 || ax >= 8 = (Board brd w b)
-                                     | ay < 0 || ay >= 8 = (Board brd w b)
-                                     | otherwise = let origcell = getCell (cx,cy) (Board brd w b)
-                                                       nextcell = getCell (cx+dx,cy+dy) (Board brd w b)
-                                                       in case origcell of Cell Nothing -> (Board brd w b)
-                                                                           Cell (Just (Piece (col,p))) -> let origcol = col
-                                                                                                              origpiece = p
-                                                                                                              movesleft = if (origpiece == Pawn || origpiece == Knight || origpiece == King) then 1 else n
-                                                                                                              in if not (isMoveValid (Piece(col,p)) (dx,dy)) then (Board brd w b) else
-                                                                                                              case nextcell of Cell Nothing -> makeMove (cx+dx,cy+dy) (dx,dy) (movesleft-1) (moveSingle (cx,cy) (cx+dx,cy+dy) (Board brd w b))
-                                                                                                                               Cell (Just (Piece(col2, p2))) -> if origcol == col2 then (Board brd w b)
-                                                                                                                               else moveSingle (cx,cy) (cx+dx,cy+dy) (if origcol == White then (Board brd (w ++ [Piece(col2,p2)]) b) else (Board brd w (b ++ [Piece(col2,p2)])))--capture
-                                     where ax = cx + dx
-                                           ay = cy + dy
+    makeMove (cx,cy) (dx,dy) n board = if (ax < 0 || ax >= 8 || ay < 0 || ay >= 8) then board else
+                                       let origcell = getCell (cx,cy) board
+                                           nextcell = getCell (ax,ay) board
+                                           in if (isCellEmpty origcell) then board else
+                                           let origpiece = getCellPiece origcell
+                                               origcol = getCellColor origcell
+                                               movesleft = if (origpiece == Knight || origpiece == King) then 1 else n
+                                               in if (origpiece == Pawn) then makeMovePawn (cx,cy) (dx,dy) movesleft origcell nextcell board else 
+                                               if not (isMoveValid (Piece(origcol,origpiece)) (dx,dy)) then board else
+                                               case nextcell of None -> makeMove (ax,ay) (dx,dy) (movesleft-1) (moveSingle (cx,cy) (ax,ay) board)
+                                                                (Piece(col2, p2)) -> if origcol == col2 then board
+                                                                else moveSingle (cx,cy) (ax,ay) (addCapture board (Piece(col2,p2)))
+                                       where ax = cx + dx
+                                             ay = cy + dy
+    makeMovePawn :: Coord -> Dir -> Int -> Cell -> Cell -> Board -> Board
+    makeMovePawn (cx,cy) (dx,dy) n origcell nextcell board = let col = getCellColor origcell
+                                                                 col2 = getCellColor nextcell
+                                                                 properDir = if col == Black then (-1) else (1)
+                                                                 properStartPos = if col == Black then 6 else 1
+                                                                 movesleft = if (dx /= 0) then 1 else if (cy == properStartPos) then (min n 2) else 1
+                                                                 in if (dy /= properDir) then board else
+                                                                 if (dx == 0) then (if (not (isCellEmpty nextcell)) then board else makeMove (ax,ay) (dx,dy) (movesleft-1) (moveSingle (cx,cy) (ax,ay) board)) else
+                                                                 if ((abs dx) > 1) then board else
+                                                                 if (col2 == col) then board else moveSingle (cx,cy) (ax,ay) (addCapture board nextcell)
+                                                                 where ax = cx+dx
+                                                                       ay = cy+dy
 
-    showPieces :: [Piece] -> String
+
+    showPieces :: [Cell] -> String
     showPieces [] = []
     showPieces ((Piece(h1,h2)):t) = (show $ toConstr h1) ++ (show $ toConstr h2) ++ (if length t /= 0 then "," else "") ++ showPieces t
 
