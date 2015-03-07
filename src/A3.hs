@@ -1,3 +1,7 @@
+--Name:   Zachary Harris
+--Course: CPS506, Winter 2015, Assignment #3
+--Due:    2015.03.09 23.59
+--Credit: This is entirely my own work.
 {-# LANGUAGE DeriveDataTypeable #-}
 module A3 where
     import Data.List.Split
@@ -20,13 +24,6 @@ module A3 where
         Queen == Queen  = True
         King == King   = True
         _ == _ = False
-    --readPieceType :: String -> PieceType
-    --readPieceType "P" = Pawn
-    --readPieceType "R" = Rook
-    --readPieceType "Kn" = Knight
-    --readPieceType "B" = Bishop
-    --readPieceType "Q" = Queen
-    --readPieceType "K" = King
 
     data Color = Black | White deriving (Data, Typeable)
 
@@ -49,7 +46,6 @@ module A3 where
         show None = "   "
         show (Piece (x,y)) = show x ++ show y
     instance Read Cell where
-        --readPieceType (x:y) = [(Piece (readColor x, readPieceType y))]
         readsPrec _ "" = [(None,"")]
         readsPrec _ (h:t) = [(Piece ((if h == 'B' then Black else if h == 'W' then White else error ("Parse error")), readPieceType t), "")] where
             readPieceType a | a == "P" = Pawn   
@@ -149,9 +145,6 @@ module A3 where
                                     where x = abs a
                                           y = abs b
 
-    --testMove :: Coord -> Board -> Board
-    --testMove (cx,cy) (bh:bt) = 
-
     replace :: Int -> x -> [x] -> [x]
     replace n e l = let (xs,ys) = splitAt n l in xs ++ [e] ++ (tail ys)
 
@@ -163,7 +156,6 @@ module A3 where
     moveSingle :: Coord -> Coord -> Board -> Board
     moveSingle (cx,cy) (c2x,c2y) grid = replaceInGrid (cx,cy) None (replaceInGrid (c2x,c2y) (getCell (cx,cy) grid) grid)
 
-    --  cx < 0 || cx >= 8 = error "board movement error"
     makeMove :: Coord -> Dir -> Int -> Board -> Board
     makeMove _ _ 0 board = board
     makeMove (cx,cy) (dx,dy) n board = if (ax < 0 || ax >= 8 || ay < 0 || ay >= 8) then board else
@@ -193,51 +185,28 @@ module A3 where
                                                                  where ax = cx+dx
                                                                        ay = cy+dy
 
-
     showPieces :: [Cell] -> String
     showPieces [] = []
     showPieces ((Piece(h1,h2)):t) = (show $ toConstr h1) ++ (show $ toConstr h2) ++ (if length t /= 0 then "," else "") ++ showPieces t
 
     inputLoop (Board brd w b) = do
-        --putStr $ showBoard board
         input <- getLine
-        let strings = splitOn " " input
-        let coord = posCoord (strings!!0)
-        let dir = dirOffset (strings!!1)
-        let moves = if (length strings == 3) then (read (strings!!2) :: Int) else 7
-        let (Board brd2 w2 b2) = makeMove coord dir moves (Board brd w b)
-        putStr $ showBoard (Board brd2 w2 b2)
-        putStr $ "White captures: " ++ (showPieces w2) ++ "\n"
-        putStr $ "Black captures: " ++ (showPieces b2) ++ "\n"
-        inputLoop (Board brd2 w2 b2)
+        if input == ""
+            then do putStr $ showBoard (Board brd w b)
+                    putStr $ "White captures: " ++ (showPieces w) ++ "\n"
+                    putStr $ "Black captures: " ++ (showPieces b) ++ "\n"
+            else do let strings = splitOn " " input
+                    let coord = posCoord (strings!!0)
+                    let dir = dirOffset (strings!!1)
+                    let moves = if (length strings == 3) then (read (strings!!2) :: Int) else 7
+                    let (Board brd2 w2 b2) = makeMove coord dir moves (Board brd w b)
+                    --putStr $ showBoard (Board brd2 w2 b2)
+                    --putStr $ "White captures: " ++ (showPieces w2) ++ "\n"
+                    --putStr $ "Black captures: " ++ (showPieces b2) ++ "\n"
+                    inputLoop (Board brd2 w2 b2)
     
-    --x = read "BKn" :: Piece
     main = do
-        print Black
-        --putStr $ show $ isMoveValid (Piece (White,Pawn)) (0,1)
-        --let p1 = (Black, Knight)
-        --print (showPiece p1)
-        --print (parseChessRow chessRow)
-        --print (parseBoard chessBoardString)
         let board = parseBoard chessBoardString
-        putStr $ showBoard board
+        --putStr $ showBoard board
         inputLoop board
-        {-|
-        input <- getLine ;
-        let strings = splitOn " " input
-        let coord = posCoord (strings!!0)
-        let dir = dirOffset (strings!!1)
-        let moves = if (length strings == 3) then (read (strings!!2) :: Int) else 1
-        print $ coord
-        print $ dir
-        print $ moves
-        --print $ getCell coord board
-
-        let newboard = makeMove coord dir moves board
-        putStr $ showBoard newboard
-        --print $ dirOffset input
-        --print $ splitOn " " input
-        --print $ charIndex 'b'
-        --putStr ("a: " ++ input)
-        -}
         
